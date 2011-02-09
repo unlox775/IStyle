@@ -72,9 +72,9 @@
  * end-users.
  *
  *
- * @author Dave Buchanan <dave@elikirk.com>
- * @package EliKirk
- * @version $Id: debug.inc.php,v 1.1 2010/08/05 03:38:30 elikirkd Exp $
+ * @author Dave Buchanan <dave@joesvolcano.net>
+ * @package IStyle
+ * @version $Id: debug.inc.php,v 1.1 2010/08/05 03:38:30 dave Exp $
  */
 
 $ENV_MODE = ( ($DAX_MODE_BY_TRUSTED_IP)

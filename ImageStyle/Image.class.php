@@ -19,9 +19,9 @@
  *   my $layout_obj = $image_style->layout;
  *   my $skin_style_obj = $image_style->skin_style;
  * 
- * @author Dave Buchanan <dave@elikirk.com>
+ * @author Dave Buchanan <dave@joesvolcano.net>
  * @package TSANet
- * @version $Id: Image.class.php,v 1.2 2010/08/06 03:04:56 elikirkd Exp $
+ * @version $Id: Image.class.php,v 1.2 2010/08/06 03:04:56 dave Exp $
  */
 class ImageStyle__Image {
     public $filename = '';

@@ -33,9 +33,9 @@ require_once('ImageStyle/Image.class.php');
  *            )
  * 
  * 
- * @author Dave Buchanan <dave@elikirk.com>
+ * @author Dave Buchanan <dave@joesvolcano.net>
  * @package TSANet
- * @version $Id: ImageStyle.class.php,v 1.5 2010/08/06 22:06:22 elikirkd Exp $
+ * @version $Id: ImageStyle.class.php,v 1.5 2010/08/06 22:06:22 dave Exp $
  */
 class ImageStyle {
     public $style = null;
