@@ -1,0 +1,5 @@
+RewriteEngine on
+# Rewrite all URLs to 'index.php' who will get the original REQUEST_URI
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} !^(index|upload)\.php
+RewriteRule (.*) index.php [L]
