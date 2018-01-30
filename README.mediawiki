@@ -9,7 +9,7 @@ This is an implementation that includes these packages to accomplish image uploa
 
 ==  Admin Template and iDropzone ==
 
-[[File:iDropZone_template_example.png|300px|thumb|right|iDropzone uploader in Dax (non-Dax can be done nearly identical)]]
+[[File:IDropZone_template_example.png|300px|thumb|right|iDropzone uploader in Dax (non-Dax can be done nearly identical)]]
 
 Install DropZone and iDropzone (To get the versions used by Dax):
 * Dropzone JS - [https://github.com/unlox775/Dax/blob/master/lib/Dax/js/template-editor/lib/dropzone/dropzone.min.js Source]
