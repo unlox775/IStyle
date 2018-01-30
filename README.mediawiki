@@ -1,3 +1,6 @@
+'''DEMO:''' http://istyle.joesvolcano.net/
+
+
 This is the image uploader used for Dax CMS, but it can be easily used to upload images simply in AngularJS-based admin systems.  For example, it can be easily used to upload product images for an e-commerce system, and provide install re-sizing and compositing of images on-the-fly.  This is very helpful to generate, for example, PCP images, PDP images, Cart Thumbnails, etc.
 
 This is an implementation that includes these packages to accomplish image uploading, storage and advanced image compositing:
