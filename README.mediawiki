@@ -1,0 +1,164 @@
+This is the image uploader used for Dax CMS, but it can be easily used to upload images simply in AngularJS-based admin systems.  For example, it can be easily used to upload product images for an e-commerce system, and provide install re-sizing and compositing of images on-the-fly.  This is very helpful to generate, for example, PCP images, PDP images, Cart Thumbnails, etc.
+
+This is an implementation that includes these packages to accomplish image uploading, storage and advanced image compositing:
+
+* iStyle - Image and Compositing - https://github.com/unlox775/IStyle
+* Dropzone - Drag and Drop Image Uploading - http://www.dropzonejs.com/
+* iDropzone - AngularJS directive harness for Dropzone (Written for Dax)
+
+
+==  Admin Template and iDropzone ==
+
+[[File: iDropZone_template_example.png|300px|thumb|right|iDropzone uploader in Dax (non-Dax can be done nearly identical)]]
+
+Install DropZone and iDropzone (To get the versions used by Dax):
+* Dropzone JS - [https://github.com/unlox775/Dax/blob/master/lib/Dax/js/template-editor/lib/dropzone/dropzone.min.js Source]
+* Dropzone CSS - [https://github.com/unlox775/Dax/blob/master/lib/Dax/js/template-editor/lib/dropzone/dropzone.css Source]
+* iDropzone JS - [https://github.com/unlox775/Dax/blob/master/lib/Dax/js/template-editor/lib/dropzone/idropzone.js Source]
+
+'''''NOTE: DropZone and iDropzone are already included by default in the Dax advanced editor Angular app (in the IFRAME that load in the edit pane).'''''
+
+
+== Example : Simple Image Upload ==
+
+For demonstration, we will make a simple upload module, called '''General/ImageUpload'''.  It will allow image uploads of various sizes, and allow the code including it to determine the aspect ratio / compositing.
+
+<br clear="both"/>
+'''Example source of somewhere including our new module (passing in it's sizing prefs):'''
+<source lang="html">
+<template-include template-data="local.image"
+	which="General/ImageUpload"
+	override-options="{'istyle' : {'width' : '226', 'height' : '315', 'istyle_code' : 'ipad_frame_1'}}"
+	></template-include>
+</source>
+
+
+'''Simple Admin template, ''General/ImageUpload/admin.html:'''''
+<source lang="html">
+<div class="image-content-map-node">
+	<div ng-if="local.template != ''" style="width: 50%; float: right">
+		<iDropzone ng-model="local.image_url" json='{"acceptFileTypes":"image","maxFiles":1,"maxFileSize":15}' upload-url="'/.dyn-images-upload.php?istyle_code='+ istyle.istyle_code"></iDropzone>
+	</div>
+	<br/>
+	Image URL: <input ng-model="local.image_url" type="text" style="width: 50%"/>
+	<br/>
+	<i style="display: block; text-align: right">( Dimensions: {{istyle.width}} x {{istyle.height}} )</i>
+    Image Alt Text: <input ng-model="local.alt" type="text" style="width: 50%"/>
+</div>
+</source>
+
+The next step is to get that URL mentioned above to work: '''''/.dyn-images-upload.php?istyle_code=ZZZZ'''''.  To do that we install iStyle and get it wires up to that URL.
+
+== Install iStyle ==
+
+# Download iStyle: https://github.com/unlox775/IStyle/archive/master.zip
+# unzip it somewhere (preferbly Not in the docroot)
+# Create a directory where you want the images uploaded (commonly named "dyn-images")
+## Set permissions to allow your web server processes to write to that directory
+## Make a sym-link from that dir into your public doc-root (commonly named "/dyn-images")
+
+
+==  Define iStyle Config ==
+
+This is the config that tells iStyle where all of it's pieces are, directories, etc.  ALSO '''''it is your "style-sheet"''''' of all type compositing "classes" for your uploaded images.  Below is a sample one, set these to where your pieces are for your system.  Notice our style for the "ipad frame" that we mentioned above.
+
+'''IStyle config, put in a config dir with your application (e.g. application/configs/istyle-config.php):'''
+<source lang="php" collapse="false">
+<?php
+
+$DAX_IMAGE_STYLE_URL_ROOT = '/dyn-images';
+$DAX_IMAGE_STYLE_DEFAULT_CODE = 'default';
+$DAX_IMAGE_STYLE_ORIG_MAX_SIZE = '5'; # megabytes
+$DAX_IMAGE_STYLE_ORIG_MAX_FORCE_ISTYLE_CODE = 'orig_max_force_istyle';
+$DAX_CACHE_BASE =             $_SERVER['DOCUMENT_ROOT'] .'/../../../files/www/dyn-images';
+$DAX_IMAGE_STYLE_RSC_ROOT =   $_SERVER['DOCUMENT_ROOT'] .'/images-hidpi/istyle';
+$DAX_IMAGE_STYLE_ORIG_BASE =  $_SERVER['DOCUMENT_ROOT'] .'/../../../files/www/images';
+$DAX_IMAGE_STYLE_CACHE_BASE = $_SERVER['DOCUMENT_ROOT'] .'/dyn-images';
+
+###  Styles -- For filter Syntax and examples see: http://istyle.joesvolcano.net/
+$DAX_IMAGE_STYLES = array(
+
+	'default' => array(
+		'size' => '100.0%x100.0%;mode=fit',
+		'filter_script' => '',
+		'format' => 'jpeg;jpeg_quality=80%',
+		),
+	'ipad_frame_1' => array(
+		'size' => '226x315;mode=fill',
+		'crop' => 'nocrop',
+		'filter_script' => '
+			sharpen(2)
+			| frame( RSC_ROOT/empty_ipad_1.png
+				; frame_order = top
+				; border_left = 36
+				; border_top = 41
+				; border_right = 27
+				; border_bottom = 68
+				)',
+		'format' => 'jpeg;jpeg_quality=85%',
+		),
+	);
+</source>
+
+== Create in iStyle's Uploader Endpoint ==
+
+The purposes of this file are to connect these 3 things:
+# your app's '''authentication''' layer ''(so only authenticated users can upload new images)''
+# your '''config file'''
+# the '''install-directory''' where IStyle is installed
+
+'''Create new PHP file (e.g. .dyn-images-upload.php) in public directory:'''
+<source lang="php" collapse="false">
+<?php
+
+... Whatever code here so we can load the environment.  In this example case, so we have "App" class loaded...
+
+###  Auth : Make sure we are logged in
+$user = \App::adminCheckIsLoggedIn();
+if ( empty( $user ) ) { header('HTTP/1.0 403 Forbidden'); echo "<h1>Forbidden</h1>"; exit; }
+
+###  Config file
+include(dirname(__FILE__) .'/../../path/to/config/istyle-config.php');
+
+###  Installation path - connect and run upload script
+chdir($DAX_CACHE_BASE);
+$_SERVER['SCRIPT_NAME'] = $DAX_IMAGE_STYLE_URL_ROOT .'/index.php';
+include(dirname(__FILE__) .'/../../path/to/install-dir/IStyle/upload.php');
+</source>
+
+== Add IStyle's Image-Generation Hook (.htaccess Mod Rewrite rule) and .dyn-images-generate.php ==
+
+IStyle does the generation of composited images On-The-Fly, lazy loading and then caching.  Say for example, that a week ago, you loaded 100 product images, including '''pizza-cutter.jpg'''.  At the time you uploaded it, the image URL (the original file), has not actually been generated in a URL that the public can access (unless you put your ORIG_BASE dir as a sub-dir of CACHE_BASE, which can be done).
+
+But, since then, no request has hit the server yet for the following '''''styled''''' generated URL: <pre>https://yoursite.com/dyn-images/cart-thumb/pizza-cutter.jpg</pre>
+
+At the moment of that URL being requested, IStyle's Mod Rewrite rule first checks if an image with that path does exist.  If it does, it lets the server send that cached image.  If not, then the Mod Rewrite sends the request to: <pre>https://yoursite.com/.dyn-images-generate.php</pre>
+
+[[File: IStyle_generation_example.png|200px|thumb|right|IStyle Example Compositing with iPad Frame]]
+
+That script:
+# Looks up "cart-thumb" style in the config file
+# Generates the image according to the style's specs
+# Caches the result
+# Sends the newly-generated image data to the browser
+
+<br clear="both"/>
+'''Here is the contents for that .dyn-images-generate.php script (alter to point to your config, and install dir):'''
+<source lang="php" collapse="false">
+<?php
+###  Config file
+include(dirname(__FILE__) .'/../../path/to/config/istyle-config.php');
+
+###  Installation path - connect and run image-generation script
+chdir($DAX_CACHE_BASE);
+$_SERVER['SCRIPT_NAME'] = $DAX_IMAGE_STYLE_URL_ROOT .'/index.php';
+include(dirname(__FILE__) .'/../../path/to/install-dir/IStyle/index.php');
+</source>
+
+'''And the .htaccess file (this example is for adding /dyn-images/... in the docroot):'''
+<pre>
+###  IStyle override for automatic images serving
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_URI} ^/dyn-images/
+RewriteRule (.*) .dyn-images-generate.php [L]
+</pre>
