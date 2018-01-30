@@ -134,7 +134,7 @@ But, since then, no request has hit the server yet for the following '''''styled
 
 At the moment of that URL being requested, IStyle's Mod Rewrite rule first checks if an image with that path does exist.  If it does, it lets the server send that cached image.  If not, then the Mod Rewrite sends the request to: <pre>https://yoursite.com/.dyn-images-generate.php</pre>
 
-[[File: IStyle_generation_example.png|200px|thumb|right|IStyle Example Compositing with iPad Frame]]
+[[File:IStyle_generation_example.png|200px|thumb|right|IStyle Example Compositing with iPad Frame]]
 
 That script:
 # Looks up "cart-thumb" style in the config file
